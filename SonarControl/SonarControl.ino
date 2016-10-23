@@ -81,7 +81,7 @@ void loop() {
  
   if (sonarReadDone){
     if (stringComplete) {
-        if (inputString[0] == 'A'){
+        if (inputString[0] == 'S'){
           Serial.print(data);
         }
       inputString = "";
