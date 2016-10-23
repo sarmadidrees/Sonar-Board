@@ -115,9 +115,11 @@ void loop() {
          if (sonarReadDone){
           data.toCharArray(dataBuffer,15);
           robot.pleaseLocalize(dataBuffer);
-          localizeData = robot.getX();
+          localizeData = "S";
           localizeData += ",";
-          localizeData += robot.getY();
+          localizeData += (char)robot.getX();
+          localizeData += ",";
+          localizeData += (char)robot.getY();
           localizeData += "\n";
           
           Serial.print(localizeData);
