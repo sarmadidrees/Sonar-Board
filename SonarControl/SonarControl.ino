@@ -4,6 +4,7 @@
 /****************************************************************/
 
 #include <NewPing.h>
+#include "LocalizeAGV.h"
 
 /**** For 4 UltraSonic Sensors ****/
 #define SONAR_NUM       4
@@ -47,6 +48,7 @@ bool sonarReadDone = false;
 //#define PRINT_SONAR   true
 
 String data     = "";               // To hold the sending data
+char dataBuffer[20] = "";
 #define SHORT_DISTANCE        8     // in cm
 #define ONE_BOX_DISTANCE      55    // in cm
 #define TWO_BOX_DISTANCE      95    // in cm
@@ -56,20 +58,24 @@ String data     = "";               // To hold the sending data
 String inputString = "";            // To hold incomming string through serial
 boolean stringComplete = false;
 
+LocalizeAGV robot = LocalizeAGV();  // For localization of robot
+String localizeData = "";
+
 void setup() {
   
   #if DEBUG 
   Serial.begin(9600);
   #endif
-  //delay(550);
+ 
   initColorSonar();
 
   inputString.reserve(200);       //Reserve 200 bytes for inputString from Serial
-  
+  data.reserve(20);
+  localizeData.reserve(10);
 }
 
 void loop() {
-
+/*
   if (!colorReadDone){
   readColorSensor();                    //This loop reads light intensity 
   char currentColor = findColor();      //To find current color  
@@ -91,7 +97,42 @@ void loop() {
     colorReadDone = false;
     data = "";
   }
+  */
+
+  if (stringComplete) {
+      if (inputString[0] == 'S'){
+        robot.setOrientation(inputString[2]);      //setting robot orientation
+        
+        if (!colorReadDone){
+          readColorSensor();                    //This loop reads light intensity 
+          char currentColor = findColor();      //To find current color  
+          data += currentColor;
+          data += ","; 
+        }
   
+        readAllSonar();
+
+         if (sonarReadDone){
+          data.toCharArray(dataBuffer,15);
+          robot.pleaseLocalize(dataBuffer);
+          localizeData = robot.getX();
+          localizeData += ",";
+          localizeData += robot.getY();
+          localizeData += "\n";
+          
+          Serial.print(localizeData);
+
+          localizeData = "";
+          inputString = "";
+          stringComplete = false;
+     
+          sonarReadDone = false;
+          colorReadDone = false;
+          data = "";
+        }
+    }
+  }
+    
   
   #if PRINT_SONAR
   printSonar();
