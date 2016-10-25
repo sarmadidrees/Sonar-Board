@@ -59,7 +59,7 @@ String inputString = "";            // To hold incomming string through serial
 boolean stringComplete = false;
 
 LocalizeAGV robot = LocalizeAGV();  // For localization of robot
-String localizeData = "";
+String localizeData = "SONAR,";
 
 void setup() {
   
@@ -100,7 +100,7 @@ void loop() {
   */
 
   if (stringComplete) {
-      if (inputString[0] == 'S'){
+      if (inputString.startsWith("L")){
         robot.setOrientation(inputString[2]);      //setting robot orientation
         
         if (!colorReadDone){
@@ -115,7 +115,8 @@ void loop() {
          if (sonarReadDone){
           data.toCharArray(dataBuffer,15);
           robot.pleaseLocalize(dataBuffer);
-          localizeData = "S";
+          localizeData = "SONAR,";
+          localizeData += "XY";
           localizeData += ",";
           localizeData += (char)robot.getX();
           localizeData += ",";
@@ -132,6 +133,35 @@ void loop() {
           colorReadDone = false;
           data = "";
         }
+    }
+    else if (inputString.startsWith("D")){
+      if (!colorReadDone){
+          readColorSensor();                    //This loop reads light intensity 
+          char currentColor = findColor();      //To find current color  
+
+          data = inputString[2];        //add orientation
+          data += ",";
+          data += currentColor;
+          data += ","; 
+        }
+
+        readAllSonar();
+
+        if (sonarReadDone){
+          localizeData = "SONAR,DATA,";
+          localizeData += data;
+          
+          Serial.print(localizeData);
+
+          localizeData = "";
+          inputString = "";
+          stringComplete = false;
+     
+          sonarReadDone = false;
+          colorReadDone = false;
+          data = "";
+        }
+        
     }
   }
     
